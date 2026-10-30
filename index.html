@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>入力フォーム</title>
+    <style>
+      /* --- 高齢者向けスマートフォンUIスタイル --- */
+
+      /* 全体設定 */
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Hiragino Kaku Gothic ProN", "メイリオ", sans-serif;
+        font-size: 18px; /* 大きめのフォントサイズ */
+        line-height: 1.6;
+        color: #222222; /* コントラストの強い濃い文字色 */
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 16px 16px 110px; /* 下は「案内を聞く」ボタンに隠れないよう余白 */
+      }
+
+      /* コンテナ（カード風デザインで視線を集める） */
+      #homeArea, #menuArea, #dummyArea, #inputArea, #confirmArea, #compArea {
+        background-color: #ffffff;
+        border: 1px solid #cccccc;
+        border-radius: 12px;
+        padding: 20px 16px;
+        max-width: 500px;
+        margin: 100px auto 20px auto;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      }
+
+      .groName {
+        font-size: 200%;
+      }
+
+      /* リタイアボタン */
+      #retireBtn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        display: inline-block;
+        text-decoration: none;
+        background: #e51616;
+        color: #FFF;
+        width: 120px;
+        height: 120px;
+        line-height: 120px;
+        border-radius: 50%;
+        text-align: center;
+        font-weight: bold;
+        overflow: hidden;
+        box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.29);
+        border-bottom: solid 3px #A02B31;
+        transition: .4s;
+      }
+      #retireBtn:active {
+        transform: translateY(2px);
+        box-shadow: 0 0 1px rgba(0, 0, 0, 0.15);
+        border-bottom: none;
+      }
+
+      /* 見出し・テキスト */
+      h1 {
+        font-size: 22px;
+        color: #000000;
+        text-align: center;
+        margin-top: 0;
+      }
+      p {
+        margin-top: 0;
+        margin-bottom: 16px;
+      }
+
+      /* ハンバーガーメニュー */
+      .hamburger {
+        font-family: sans-serif;
+      }
+
+      .menu-toggle {
+        position: fixed;
+        top: 0;
+        left: 2px;
+        z-index: 1001;
+        width: 55px;
+        height: 35px;
+        padding: 5px;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+
+        background-color: #0055b8;
+        border: none;
+        cursor: pointer;
+      }
+
+      .menu-toggle span {
+        display: block;
+        width: 100%;
+        height: 3px;
+        background-color: #FFF;
+      }
+
+      .menu {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+
+        width: 100%;
+        height: 100vh;
+        height: 100dvh;
+        box-sizing: border-box;
+        padding: 55px 14px 20px;
+
+        background-color: #0055b8;
+
+        /* 初期状態は非表示 */
+        transform: translateX(-100%);
+        visibility: hidden;
+        transition: transform 0.3s ease,
+                    visibility 0.3s ease;
+      }
+
+      /* メニュー表示中 */
+      .menu.is-open {
+        transform: translateX(0);
+        visibility: visible;
+      }
+
+      /* 閉じるボタン */
+      .menu-close {
+        position: absolute;
+        top: 8px;
+        left: 12px;
+
+        padding: 0;
+        border: none;
+        background: transparent;
+        color: #fff;
+
+        font-size: 32px;
+        font-weight: bold;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      /* リンク一覧 */
+      .menu ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .menu li {
+        margin-top: 15px;
+        margin-bottom: 5px;
+      }
+
+      .menu div {
+        color: #fff;
+        font-size: 32px;
+        text-decoration: underline;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 8px;
+      }
+
+      /* メニュー表示中は三本線を隠す */
+      .menu-open .menu-toggle {
+        display: none;
+      }
+
+      /* フォームグループ */
+      .form-group {
+        margin-bottom: 24px;
+        padding: 12px;
+        border: 2px solid transparent;
+        border-radius: 8px;
+        transition: background-color 0.3s, border-color 0.3s;
+      }
+      label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 8px;
+        font-size: 18px;
+      }
+
+      /* 入力フィールド */
+      input[type="text"] {
+        width: 100%;
+        min-height: 52px; /* タップしやすい高さ */
+        font-size: 18px;
+        padding: 10px 12px;
+        border: 2px solid #666666; /* くっきりした枠線 */
+        border-radius: 8px;
+        background-color: #ffffff;
+        margin-bottom: 8px;
+      }
+      input[type="text"]:focus {
+        border-color: #0055b8;
+        outline: 3px solid rgba(0, 85, 184, 0.3);
+      }
+
+      /* 年齢欄（入力欄と「歳」を横並び） */
+      .year-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .year-row span {
+        font-weight: bold;
+        font-size: 20px;
+        white-space: nowrap;
+      }
+
+      /* チェックボックス（押しやすく巨大化） */
+      .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 20px;
+        font-weight: bold;
+        padding: 12px;
+        background-color: #eef4ff;
+        border: 2px solid #0055b8;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-bottom: 16px;
+      }
+      input[type="checkbox"] {
+        width: 28px;
+        height: 28px;
+        accent-color: #0055b8;
+      }
+
+      /* ファイル選択 */
+      input[type="file"] {
+        font-size: 16px;
+        margin-bottom: 12px;
+        width: 100%;
+      }
+
+      /* 画像プレビュー */
+      #preview, #confirmPhoto {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        margin-top: 10px;
+        display: none;
+      }
+
+      /* ボタンデザイン */
+      button, .btn {
+        display: block;
+        width: 100%;
+        min-height: 56px; /* 指で押しやすい十分な高さ */
+        font-size: 20px;
+        font-weight: bold;
+        color: #ffffff;
+        background-color: #0055b8; /* 視認性の高い青 */
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        text-align: center;
+        box-shadow: 0 4px 0 #003370; /* 立体感をつけて「押せる」ことを明示 */
+        transition: transform 0.1s, box-shadow 0.1s;
+      }
+      button:active {
+        transform: translateY(2px);
+        box-shadow: 0 2px 0 #003370;
+      }
+      button:disabled {
+        background-color: #cccccc;
+        box-shadow: none;
+      }
+
+      /* 確認画面のボタンエリア（横並び） */
+      .btn2 {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+      }
+      #backBtn {
+        background-color: #666666;
+        box-shadow: 0 4px 0 #333333;
+      }
+
+      /* 確認画面の入力内容表示 */
+      .confirm-item {
+        background-color: #f0f0f0;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+      }
+      .confirm-label {
+        font-size: 14px;
+        color: #555555;
+        margin-bottom: 4px;
+      }
+      .confirm-value {
+        font-size: 20px;
+        font-weight: bold;
+        word-break: break-all;
+      }
+
+      /* エラー・警告メッセージ */
+      #agreementMessage, #statusMessage, #inputMessage {
+        color: #d93025;
+        font-weight: bold;
+        margin-top: 12px;
+        margin-bottom: 12px;
+        text-align: center;
+      }
+
+      /* --- 音声案内：「案内を聞く」ボタン（右下に固定） --- */
+      #speakBtn {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        z-index: 1002; /* メニューを開いていても押せるように */
+        width: auto;
+        min-height: 64px;
+        padding: 0 22px;
+        font-size: 20px;
+        border-radius: 32px;
+        background-color: #2e7d32;
+        box-shadow: 0 4px 0 #1b5e20;
+      }
+      #speakBtn:active {
+        box-shadow: 0 2px 0 #1b5e20;
+      }
+
+      /* --- アクティブな入力エリアのハイライトスタイル --- */
+      .highlight-active {
+        background-color: #fffde7 !important; /* 目立ちやすい薄い黄色 */
+        border: 3px solid #fbc02d !important;
+        color: #000000 !important;
+        box-shadow: 0 0 10px rgba(251, 192, 45, 0.5);
+        animation: hl-pulse 1.6s ease-in-out infinite; /* ゆっくり点滅して視線を誘導 */
+      }
+      @keyframes hl-pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(251, 192, 45, 0.9); }
+        50%      { box-shadow: 0 0 0 10px rgba(251, 192, 45, 0); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .highlight-active { animation: none; }
+      }
+      /* メニューボタン（三本線）をハイライトした時は線を黒にして見えるように */
+      .menu-toggle.highlight-active {
+        background-color: #fbc02d !important;
+      }
+      .menu-toggle.highlight-active span {
+        background-color: #000000;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="homeArea">
+      <!--ホーム-->
+      <p>これから実験を始めます。了承いただける場合は、「同意する」にチェックをいれてください。</p>
+      <form action="#" id="agreementForm">
+        <label class="checkbox-label" id="agreeLabel"><input type="checkbox" id="agreementCheck">同意する</label>
+        <div id="agreementMessage"></div>
+        <button type="submit" id="startBtn">はじめる</button>
+      </form>
+    </div>
+
+    <div id="menuArea" style="display: none;">
+      <!--ハンバーガー選択画面-->
+      <div id="MenuText">
+        <p>あなたは、</p>
+        <p class="groName">グループA</p>
+        <p>です。</p>
+        <p>左上のメニューバーから、あなたのグループを選択して、入力ページに進んでください。</p>
+      </div>
+    </div>
+
+    <div class="hamburger" id="hamburgerMenu" style="display: none;">
+      <button type="button" class="menu-toggle" aria-label="メニューを開く" aria-expanded="false" aria-controls="menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav id="menu" class="menu" aria-hidden="true">
+        <button type="button" class="menu-close" aria-label="メニューを閉じる">×</button>
+        <ul>
+          <li><div id="groupA">グループA</div></li>
+          <li><div id="groupB">グループB</div></li>
+          <li><div id="groupC">グループC</div></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div id="dummyArea" style="display: none;">
+      <!--ダミーページ-->
+      <div id="dummyMessage" class="groName">ここはグループ■です</div>
+      <div>違うページが選択されました。メニューからグループAのページを選択してください。</div>
+    </div>
+
+    <div id="inputArea" style="display: none;">
+      <!-- 入力欄 -->
+      <form action="#" id="inputForm">
+        <!--名前-->
+        <div class="form-group" id="group-name">
+          <p>お名前を入力してください。</p>
+          <label for="lname">姓</label>
+          <input type="text" id="lname" placeholder="姓" data-label="姓" required>
+          <label for="fname">名</label>
+          <input type="text" id="fname" placeholder="名" data-label="名" required>
+        </div>
+
+        <!--年齢-->
+        <div class="form-group" id="group-year">
+          <label for="year">現在の年齢を入力してください。</label>
+          <div class="year-row">
+            <input type="text" id="year" placeholder="年齢" pattern="^[0-9\uff10-\uff19]+$" inputmode="numeric" data-label="年齢" required>
+            <span>歳</span>
+          </div>
+        </div>
+
+        <!--写真-->
+        <div class="form-group" id="group-photo">
+          <label for="uploadPhoto">写真をアップロードしてください。</label>
+          <input type="file" id="uploadPhoto" accept="image/png, image/jpeg" data-label="写真" required>
+          <img id="preview" src="" alt="選んだ写真"> <!--プレビュー画像表示欄-->
+        </div>
+
+        <div id="inputMessage" role="alert"></div>
+        <button type="submit" class="btn" id="confBtn">確認画面へ進む</button>
+      </form>
+    </div>
+
+    <div id="confirmArea" style="display: none;">
+      <!-- 内容確認 -->
+      <p>入力内容の確認</p>
+      <p>以下の内容で送信してもよろしいですか？</p>
+
+      <div class="confirm-item">
+        <div class="confirm-label">お名前</div>
+        <span id="confirmLname" class="confirm-value"></span>
+        <span id="confirmFname" class="confirm-value"></span>
+      </div>
+
+      <div class="confirm-item">
+        <div class="confirm-label">年齢</div>
+        <div class="confirm-value"><span id="confirmYear"></span> 歳</div>
+      </div>
+
+      <div class="confirm-item">
+        <div class="confirm-label">送信する写真</div>
+        <img id="confirmPhoto" src="" alt="送信写真">
+      </div>
+
+      <div class="btn2">
+        <button id="backBtn" type="button">修正する</button>
+        <button id="submitBtn" type="button">送信</button>
+      </div>
+    </div>
+    <div id="statusMessage"></div>
+
+    <div id="compArea" style="display: none;">
+      <!--終了-->
+      <div id="compStatus"><h1>以上で実験は終了です</h1></div>
+      <div id="compMessage"><p>ご協力ありがとうございました。スタッフを呼んでください。</p></div>
+    </div>
+
+    <!--リタイアボタン-->
+    <div id="retireArea" style="display: block;">
+      <button id="retireBtn" type="button" formnovalidate>中止する</button>
+    </div>
+
+    <!--音声案内をもう一度聞くボタン-->
+    <button id="speakBtn" type="button" aria-label="音声案内を聞く">🔊 案内を聞く</button>
+  </body>
+
+  <script>
+    'use strict';
+
+    /* =========================================================
+     * 設定
+     * ========================================================= */
+    const GROUP_NAME = 'グループA';   // このページのグループ（スプレッドシートにも送信）
+    const HIGHLIGHT_OWN_GROUP = true;  // メニュー内で正解のグループをハイライトするか（実験条件に応じて false に）
+    const REPEAT_INTERVAL_MS = 10000;  // 読み上げ終了から次の繰り返しまでの間隔（ミリ秒）
+
+    // GitHub Pages で公開する時だけ使う：GASを「ウェブアプリ」としてデプロイしたURL
+    // （GASのページとして開いている間は google.script.run が使われるので不要）
+    const GAS_URL = 'https://script.google.com/macros/s/XXXXXXXXXXXXXXXX/exec';
+
+    /* =========================================================
+     * 音声案内の文章（原案はここを書き換えるだけで反映されます）
+     * ========================================================= */
+    const GUIDE = {
+      home:        'これから実験を始めます。了承いただける場合は、「同意する」の四角を押して、チェックを入れてください。',
+      agreed:      '同意にチェックが入りました。次に、下の青い「はじめる」ボタンを押してください。',
+      needAgree:   '「同意する」にチェックが入っていません。「同意する」の四角を押してから、「はじめる」ボタンを押してください。',
+      menu:        `あなたは、${GROUP_NAME}です。画面の左上にある、三本線のメニューボタンを押してください。`,
+      menuOpen:    `メニューが開きました。グループA、グループB、グループCの、3つが並んでいます。あなたのグループ、${GROUP_NAME}を押してください。`,
+      dummy:       (name) => `ここは、${name}のページです。違うページが選ばれました。左上のメニューボタンを押して、${GROUP_NAME}を選び直してください。`,
+      input:       '入力画面です。お名前、年齢、写真の、3つを入力します。まず、「姓」の欄を押して、名字を入力してください。',
+      lname:       '「姓」の欄に、名字を入力してください。入力が終わったら、その下の「名」の欄を押してください。',
+      fname:       '「名」の欄に、下のお名前を入力してください。入力が終わったら、「年齢」の欄を押してください。',
+      year:        '「年齢」の欄に、今の年齢を数字で入力してください。入力が終わったら、写真の「ファイルを選択」ボタンを押してください。',
+      photo:       '「ファイルを選択」ボタンを押すと、写真を選べます。送信したい写真を、1枚選んでください。',
+      photoPicking:'写真を選ぶ画面が開きます。送信したい写真を、1枚選んでください。',
+      photoSelected:'写真が選ばれました。画面の下にある、「確認画面へ進む」ボタンを押してください。',
+      required:    (label) => `「${label}」が、まだ入力されていません。黄色く光っているところに入力してください。`,
+      yearInvalid: '年齢は、数字だけで入力してください。例えば、70、のように入力します。',
+      confirm:     (l, f, y) => `入力内容の確認です。お名前は、${l} ${f}さん。年齢は、${y}歳です。写真も表示されています。よろしければ、右下の「送信」ボタンを押してください。直したいところがあれば、左下の「修正する」ボタンを押してください。`,
+      back:        '入力画面に戻りました。直したい欄を押して、修正してください。終わったら、「確認画面へ進む」ボタンを押してください。',
+      sending:     '送信しています。画面を触らずに、そのままお待ちください。',
+      complete:    '送信が完了しました。以上で実験は終了です。ご協力ありがとうございました。スタッフを呼んでください。',
+      failed:      '送信に失敗しました。もう一度「送信」ボタンを押すか、スタッフを呼んでください。',
+      retireConfirm:'実験を中断しますか。中断する場合は「OK」、続ける場合は「キャンセル」を押してください。',
+      retiring:    '中断しています。そのままお待ちください。',
+      retired:     '実験を中断しました。スタッフを呼んでください。',
+      retireFailed:'中断の送信に失敗しました。もう一度、右上の「中止する」ボタンを押すか、スタッフを呼んでください。',
+    };
+
+    /* =========================================================
+     * エレメント取得
+     * ========================================================= */
+    const homeArea = document.getElementById('homeArea');     //ホームエリア
+    const menuArea = document.getElementById('menuArea');     //メニューエリア
+    const dummyArea = document.getElementById('dummyArea');     //ダミーエリア
+    const inputArea = document.getElementById('inputArea');     //入力エリア
+    const confirmArea = document.getElementById('confirmArea'); //内容確認エリア
+    const compArea = document.getElementById('compArea');     //終了エリア
+    const hamburgerMenu = document.getElementById('hamburgerMenu');   //ハンバーガーメニュー
+
+    const agreementCheck = document.getElementById('agreementCheck');     //同意するチェック
+    const agreeLabel = document.getElementById('agreeLabel');     //同意するラベル（ハイライト対象）
+    const startBtn = document.getElementById('startBtn');     //始めるボタン
+    const agreementMessage = document.getElementById('agreementMessage');     //同意してメッセージ
+
+    const toggleBtn = document.querySelector('.menu-toggle');   //三本線ボタン
+    const closeBtn = document.querySelector('.menu-close');     //メニューの×ボタン
+    const menu = document.getElementById('menu');
+    const groupA = document.getElementById('groupA');
+    const groupB = document.getElementById('groupB');
+    const groupC = document.getElementById('groupC');
+
+    const dummyMessage = document.getElementById('dummyMessage');     //ダミーページの警告メッセージ
+
+    const inputForm = document.getElementById('inputForm');     //フォームのID
+    const lname = document.getElementById('lname');     //苗字　入力
+    const fname = document.getElementById('fname');     //名前　入力
+    const year = document.getElementById('year');     //年齢　入力
+    const uploadPhoto = document.getElementById('uploadPhoto');     //写真 　入力
+    const groupPhoto = document.getElementById('group-photo');     //写真欄（ハイライト対象）
+    const preview = document.getElementById('preview');     //写真　入力エリア　プレビュー
+    const inputMessage = document.getElementById('inputMessage');     //入力漏れメッセージ
+
+    const confirmLname = document.getElementById('confirmLname');     //苗字　内容確認
+    const confirmFname = document.getElementById('confirmFname');     //名前　内容確認
+    const confirmYear = document.getElementById('confirmYear');     //年齢　内容確認
+    const confirmPhoto = document.getElementById('confirmPhoto');       //写真　内容確認
+
+    const confBtn = document.getElementById('confBtn');     //確認遷移ボタン
+    const backBtn = document.getElementById('backBtn');     //修正ボタン
+    const submitBtn = document.getElementById('submitBtn');     //送信ボタン
+    const statusMessage = document.getElementById('statusMessage');     //送信中メッセージ
+
+    const compStatus = document.getElementById('compStatus');   //終了時のステータス（成功か中断か）
+    const compMessage = document.getElementById('compMessage');   //終了時のメッセージ
+
+    const retireArea = document.getElementById('retireArea');   //リタイアエリア
+    const retireBtn = document.getElementById('retireBtn');   //リタイアボタン
+    const speakBtn = document.getElementById('speakBtn');   //案内を聞くボタン
+
+    let formData = {};      //フォームデータを保持
+    let timeData = {};      //時間計測群
+    let missTapCount = 0;     //エリア外タップカウント変数
+    let insideMissTapCount = 0;   //エリア内ミスタップカウント変数
+    let befroreClick = null;    //エリア内ミスじゃないタップ
+    const startTimeWhole = new Date();     //実行時間計測
+    let collaboratorId = null;
+    let stepName = 'ホーム';    //攻略ステップの名前
+    let currentDummyName = '';  //表示中のダミーページ名
+    let isRetired = false;      //中断ボタンから送信したか
+
+    /* =========================================================
+     * 時間計測
+     * ========================================================= */
+    const tracker = {
+      nowName: stepName,
+      timeStart: new Date(),
+      durations: {
+        ホーム: 0,
+        メニュー: 0,
+        ダミー: 0,
+        情報入力: 0,
+        姓: 0,
+        名: 0,
+        年齢: 0,
+        写真: 0,
+        入力確認: 0
+      }
+    };
+    function updateStepName(newStepName) {
+      const now = new Date();
+      if (Object.prototype.hasOwnProperty.call(tracker.durations, tracker.nowName)) {
+        // 数値のまま足す（toFixed は文字列になり、文字列連結されてしまうため使わない）
+        tracker.durations[tracker.nowName] += (now - tracker.timeStart) / 1000;
+      }
+      tracker.nowName = newStepName;
+      tracker.timeStart = now;
+    }
+    // 画面やステップが変わる時は必ずこれを呼ぶ
+    function changeStep(newStepName) {
+      updateStepName(newStepName);
+      stepName = newStepName;
+    }
+
+    /* =========================================================
+     * 音声案内（読み上げ・繰り返し）
+     * ========================================================= */
+    const voice = {
+      supported: 'speechSynthesis' in window,
+      unlocked: false,   // ブラウザはユーザーが一度画面に触れるまで読み上げを許可しない
+      pending: null,     // 解禁前に頼まれた読み上げ
+      timer: null,       // 繰り返し用タイマー
+      speakId: 0,        // 古い読み上げの終了イベントを無視するための番号
+      current: null,     // 今読み上げている文 {text, repeat}
+      lastGuide: null,   // 最後の案内 {text, target, repeat}（「案内を聞く」用）
+      jaVoice: null,
+    };
+
+    function loadJaVoice() {
+      const voices = window.speechSynthesis.getVoices();
+      voice.jaVoice = voices.find(v => /^ja/i.test(v.lang)) || null;
+    }
+    if (voice.supported) {
+      loadJaVoice();
+      window.speechSynthesis.onvoiceschanged = loadJaVoice;
+    } else {
+      speakBtn.style.display = 'none';
+    }
+
+    // 読み上げと繰り返しを止める
+    function stopSpeech() {
+      if (!voice.supported) return;
+      voice.speakId++;
+      clearTimeout(voice.timer);
+      voice.timer = null;
+      window.speechSynthesis.cancel();
+    }
+
+    // 読み上げる。repeat=true なら、読み終わってから REPEAT_INTERVAL_MS 後に繰り返す
+    function speak(text, { repeat = false } = {}) {
+      if (!voice.supported || !text) return;
+      if (!voice.unlocked) {
+        voice.pending = { text, repeat };
+        return;
+      }
+      stopSpeech();
+      const id = voice.speakId;
+      voice.current = { text, repeat };
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ja-JP';
+      if (voice.jaVoice) utterance.voice = voice.jaVoice;
+      utterance.rate = 0.9;
+      utterance.pitch = 1.0;
+      utterance.onend = () => {
+        if (repeat && id === voice.speakId) scheduleRepeat(id);
+      };
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function scheduleRepeat(id) {
+      clearTimeout(voice.timer);
+      voice.timer = setTimeout(() => {
+        if (id === voice.speakId && voice.current) {
+          speak(voice.current.text, { repeat: true });
+        }
+      }, REPEAT_INTERVAL_MS);
+    }
+
+    // 文字を入力している間は繰り返しを後ろにずらす（入力中に何度も喋らないように）
+    document.addEventListener('input', () => {
+      if (voice.timer) scheduleRepeat(voice.speakId);
+    });
+
+    // 最初のタップで読み上げを解禁（iPhone / Chrome の自動再生制限への対策）
+    function unlockSpeech() {
+      if (voice.unlocked || !voice.supported) return;
+      voice.unlocked = true;
+      const p = voice.pending;
+      voice.pending = null;
+      if (p) speak(p.text, { repeat: p.repeat });
+    }
+    ['pointerup', 'touchend', 'click', 'keydown'].forEach(type => {
+      document.addEventListener(type, unlockSpeech, { capture: true });
+    });
+
+    // 別アプリに切り替えた時などは止め、戻ってきたら案内し直す
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        stopSpeech();
+      } else if (voice.lastGuide && voice.lastGuide.repeat) {
+        speak(voice.lastGuide.text, { repeat: true });
+      }
+    });
+
+    /* =========================================================
+     * ハイライト
+     * ========================================================= */
+    function setHighlight(element, scroll = true) {
+      document.querySelectorAll('.highlight-active').forEach(el => {
+        el.classList.remove('highlight-active');
+      });
+      if (!element) return;
+      element.classList.add('highlight-active');
+      // 画面外にあれば見える位置までスクロール（固定表示の要素は除く）
+      if (scroll && getComputedStyle(element).position !== 'fixed') {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    /* =========================================================
+     * 案内 = ハイライト + 読み上げ をまとめて行う
+     * ========================================================= */
+    function guide(text, target = null, { repeat = true, scroll = true } = {}) {
+      const last = voice.lastGuide;
+      voice.lastGuide = { text, target, repeat };
+      setHighlight(target, scroll);
+      // 同じ案内を読み上げ中なら最初から言い直さない
+      if (last && last.text === text && voice.supported && window.speechSynthesis.speaking) return;
+      speak(text, { repeat });
+    }
+
+    // 「案内を聞く」ボタン
+    speakBtn.addEventListener('click', () => {
+      const g = voice.lastGuide;
+      if (!g) return;
+      setHighlight(g.target);
+      speak(g.text, { repeat: g.repeat });
+    });
+
+    /* =========================================================
+     * ID発行
+     * ========================================================= */
+    function formatDateNum(date) {
+      const parts = new Intl.DateTimeFormat('ja-JP', {
+        timeZone: 'Asia/Tokyo',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hourCycle: 'h23'
+      }).formatToParts(date);
+
+      const values = {};
+      parts.forEach(part => {
+        values[part.type] = part.value;
+      });
+
+      return values.month + values.day
+      + values.hour + values.minute + values.second;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const dateNum = formatDateNum(new Date());
+      const randomNum = Math.floor(Math.random() * 90) + 10;
+      collaboratorId = dateNum + randomNum.toString();
+    });
+
+    /* =========================================================
+     * ミスタップ計測
+     * ========================================================= */
+    //エリア外ミスタップカウンター
+    document.addEventListener('click', (e) => {
+      if(!e.target.closest('input, button, label')) {
+        missTapCount++;
+      }
+    });
+
+    //エリア内ミスタップカウンター
+    document.addEventListener('mousedown', () => {
+      befroreClick = document.activeElement;
+    }, { passive: true });
+    document.addEventListener('click', (e) => {
+      const targetElement = e.target.closest('input, button, label');
+      if(!targetElement) return;
+      if(befroreClick === targetElement) {
+        insideMissTapCount++;
+      }
+    });
+
+    /* =========================================================
+     * ホーム
+     * ========================================================= */
+    // 初期案内（最初のタップで読み上げが始まる。ハイライトはすぐ表示）
+    guide(GUIDE.home, agreeLabel);
+
+    agreementCheck.addEventListener('change', function() {
+      if (this.checked) {
+        agreementMessage.textContent = '';
+        guide(GUIDE.agreed, startBtn);
+      } else {
+        guide(GUIDE.home, agreeLabel);
+      }
+    });
+
+    //home→menu
+    startBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      if(agreementCheck.checked){
+        homeArea.style.display = 'none';
+        menuArea.style.display = 'block';
+        hamburgerMenu.style.display = 'block';
+        changeStep('メニュー');
+        guide(GUIDE.menu, toggleBtn);
+      }else {
+        agreementMessage.textContent = '同意するにチェックを入れてください';
+        guide(GUIDE.needAgree, agreeLabel);
+      }
+    });
+
+    /* =========================================================
+     * メニュー（menu→main/dummy）
+     * ========================================================= */
+    function openMenu() {
+      menu.classList.add('is-open');
+      hamburgerMenu.classList.add('menu-open');
+      toggleBtn.setAttribute('aria-expanded', 'true');
+      toggleBtn.setAttribute('aria-label', 'メニューを閉じる');
+      menu.setAttribute('aria-hidden', 'false');
+    }
+    function closeMenu() {
+      menu.classList.remove('is-open');
+      hamburgerMenu.classList.remove('menu-open');
+      toggleBtn.setAttribute('aria-expanded', 'false');
+      toggleBtn.setAttribute('aria-label', 'メニューを開く');
+      menu.setAttribute('aria-hidden', 'true');
+    }
+
+    toggleBtn.addEventListener('click', function() {
+      openMenu();
+      guide(GUIDE.menuOpen, HIGHLIGHT_OWN_GROUP ? groupA : null, { scroll: false });
+    });
+
+    closeBtn.addEventListener('click', function() {
+      closeMenu();
+      const text = (stepName === 'ダミー') ? GUIDE.dummy(currentDummyName) : GUIDE.menu;
+      guide(text, toggleBtn, { scroll: false });
+    });
+
+    groupA.addEventListener('click', function() {
+      closeMenu();
+      menuArea.style.display = 'none';
+      dummyArea.style.display = 'none';
+      hamburgerMenu.style.display = 'none';
+      inputArea.style.display = 'block';
+      changeStep('情報入力');
+      guide(GUIDE.input, lname);
+    });
+
+    function showDummy(name) {
+      closeMenu();
+      menuArea.style.display = 'none';
+      dummyArea.style.display = 'block';
+      dummyMessage.textContent = `ここは${name}です。`;
+      currentDummyName = name;
+      changeStep('ダミー');
+      guide(GUIDE.dummy(name), toggleBtn, { scroll: false });
+    }
+    groupB.addEventListener('click', () => showDummy('グループB'));
+    groupC.addEventListener('click', () => showDummy('グループC'));
+
+    /* =========================================================
+     * 入力画面
+     * ========================================================= */
+    let muteFocusGuide = false; // 入力漏れ案内中は、フォーカス時の案内で上書きしない
+
+    function onFieldFocus(step, text, target) {
+      changeStep(step);
+      if (muteFocusGuide) {
+        setHighlight(target, false);
+        return;
+      }
+      guide(text, target, { scroll: false });
+    }
+
+    lname.addEventListener('focus', () => onFieldFocus('姓', GUIDE.lname, lname));
+    fname.addEventListener('focus', () => onFieldFocus('名', GUIDE.fname, fname));
+    year.addEventListener('focus', () => onFieldFocus('年齢', GUIDE.year, year));
+    uploadPhoto.addEventListener('focus', () => onFieldFocus('写真', GUIDE.photo, groupPhoto));
+    // iPhone ではファイル選択に focus が来ないことがあるので click でも案内
+    uploadPhoto.addEventListener('click', () => onFieldFocus('写真', GUIDE.photoPicking, groupPhoto));
+
+    //写真　プレビュー
+    uploadPhoto.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if(file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+        inputMessage.textContent = '';
+        guide(GUIDE.photoSelected, confBtn);
+      } else {
+        guide(GUIDE.photo, groupPhoto);
+      }
+    });
+
+    //写真　確認で表示
+    confBtn.addEventListener('click', function() {
+      const file = uploadPhoto.files[0];
+      if(file) {
+        confirmPhoto.src = URL.createObjectURL(file);
+        confirmPhoto.style.display = 'block';
+      }
+    });
+
+    // 入力漏れ・形式違いの案内（ブラウザ標準の吹き出しの代わりに、音声＋ハイライトで知らせる）
+    let invalidHandled = false;
+    inputForm.addEventListener('invalid', function(e) {
+      e.preventDefault(); // 標準の吹き出しを出さない（送信は止まったまま）
+      if (invalidHandled) return; // 最初の1つだけ案内
+      invalidHandled = true;
+      setTimeout(() => { invalidHandled = false; }, 0);
+
+      const el = e.target;
+      const label = el.dataset.label || '入力欄';
+      const msg = (el === year && el.validity.patternMismatch)
+        ? GUIDE.yearInvalid
+        : GUIDE.required(label);
+      const target = (el.type === 'file') ? groupPhoto : el;
+
+      inputMessage.textContent = msg;
+      muteFocusGuide = true;
+      el.focus({ preventScroll: true });
+      muteFocusGuide = false;
+      guide(msg, target);
+    }, true); // invalid はバブリングしないのでキャプチャで受ける
+
+    //入力確認へすすむ（main→conf）
+    inputForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      inputMessage.textContent = '';
+
+      confirmLname.textContent = lname.value;
+      confirmFname.textContent = fname.value;
+      confirmYear.textContent = year.value;
+
+      inputArea.style.display = 'none';
+      confirmArea.style.display = 'block';
+      changeStep('入力確認');
+      guide(GUIDE.confirm(lname.value, fname.value, year.value), submitBtn);
+    });
+
+    //修正
+    backBtn.addEventListener('click', function() {
+      confirmArea.style.display = 'none';
+      inputArea.style.display = 'block';
+      statusMessage.textContent = '';
+      changeStep('情報入力');
+      guide(GUIDE.back, lname);
+    });
+
+    //送信
+    submitBtn.addEventListener('click', function() {
+      statusMessage.textContent = '送信中...';
+      statusMessage.style.color = 'black';
+      submitBtn.disabled = true;  //連打防止
+      guide(GUIDE.sending, null, { repeat: false });
+      saveData('成功');
+    });
+
+    /* =========================================================
+     * 中断
+     * ========================================================= */
+    retireBtn.addEventListener('click', function() {
+      speak(GUIDE.retireConfirm);
+      const attention = confirm('実験を中断しますか？');
+
+      if (!attention) {
+        // 続ける場合は直前の案内に戻す
+        const g = voice.lastGuide;
+        if (g) {
+          setHighlight(g.target, false);
+          speak(g.text, { repeat: g.repeat });
+        }
+        return;
+      }
+      isRetired = true;
+      retireBtn.disabled = true;
+      guide(GUIDE.retiring, null, { repeat: false });
+      saveData(stepName + 'で中断');
+    });
+
+    /* =========================================================
+     * 送信処理
+     * ========================================================= */
+    function saveData(result) {
+      // 今のステップの経過時間を確定させる
+      updateStepName(stepName);
+
+      const executionTimeSec = ((new Date() - startTimeWhole) / 1000).toFixed(2);
+      // 空欄は「-」で送る（画面上の入力欄は書き換えない）
+      const valueOrDash = (el) => el.value.trim() === '' ? '-' : el.value.trim();
+
+      formData = {
+        collaboratorId: collaboratorId,
+        lname: valueOrDash(lname),
+        fname: valueOrDash(fname),
+        year: valueOrDash(year),
+        result: result,
+        executionTime: executionTimeSec,
+        outsideMisstaps: missTapCount,
+        insideMisstaps: insideMissTapCount
+      };
+
+      timeData = {
+        collaboratorId: collaboratorId,
+        home: Math.round(tracker.durations.ホーム),
+        menu: Math.round(tracker.durations.メニュー),
+        dummy: Math.round(tracker.durations.ダミー),
+        main: Math.round(tracker.durations.情報入力),
+        lname: Math.round(tracker.durations.姓),
+        fname: Math.round(tracker.durations.名),
+        year: Math.round(tracker.durations.年齢),
+        photo: Math.round(tracker.durations.写真),
+        conf: Math.round(tracker.durations.入力確認)
+      };
+
+      sendToServer(formData, timeData);
+    }
+
+    // GASのページ内なら google.script.run、GitHub Pages なら fetch で GAS に送る
+    function sendToServer(formData, timeData) {
+      const inGas = (typeof google !== 'undefined' && google.script && google.script.run);
+      if (inGas) {
+        google.script.run
+          .withSuccessHandler(onSuccess)
+          .withFailureHandler(onFailure)
+          .insertToSheet(formData, timeData);
+      } else {
+        fetch(GAS_URL, {
+          method: 'POST',
+          // text/plain にすると CORS のプリフライトが発生せず GAS で受け取れる
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ formData, timeData })
+        })
+          .then(res => res.json())
+          .then(onSuccess)
+          .catch(err => onFailure(err && err.message ? err.message : err));
+      }
+    }
+
+    //送信成功
+    function onSuccess(response) {
+      if (response && response.status === 'success') {
+        statusMessage.textContent = '送信完了';
+        statusMessage.style.color = 'black';
+
+        if (isRetired) {
+          compStatus.querySelector('h1').textContent = '実験が中断されました';
+          compMessage.textContent = 'スタッフを呼んでください。';
+        }
+
+        //画面切り替え
+        retireBtn.disabled = true;
+        retireArea.style.display = 'none';
+        closeMenu();
+        hamburgerMenu.style.display = 'none';
+        homeArea.style.display = 'none';
+        menuArea.style.display = 'none';
+        dummyArea.style.display = 'none';
+        inputArea.style.display = 'none';
+        confirmArea.style.display = 'none';
+        compArea.style.display = 'block';
+
+        guide(isRetired ? GUIDE.retired : GUIDE.complete, compArea, { repeat: false });
+      } else {
+        onFailure(response ? response.message : '不明なエラー');
+      }
+    }
+
+    //送信失敗
+    function onFailure(error) {
+      statusMessage.textContent = '送信に失敗しました。　' + error;
+      statusMessage.style.color = 'red';
+      submitBtn.disabled = false; // 再送できるように戻す
+
+      if (isRetired) {
+        isRetired = false;
+        retireBtn.disabled = false;
+        guide(GUIDE.retireFailed, retireBtn);
+      } else {
+        guide(GUIDE.failed, submitBtn);
+      }
+    }
+  </script>
+</html>
