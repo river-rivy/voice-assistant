@@ -4,7 +4,7 @@
     <base target="_top">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>入力フォーム</title>
+    <title>音声支援体験会(音声支援)</title>
     <style>
       /* --- 高齢者向けスマートフォンUIスタイル --- */
 
@@ -364,7 +364,8 @@
   <body>
     <div id="homeArea">
       <!--ホーム-->
-      <p>これから実験を始めます。了承いただける場合は、「同意する」にチェックをいれてください。</p>
+      <p>体験会を始めます。「同意する」にチェックを入れて、「はじめる」を押してください。</p>
+      <font color="red">中断する場合は右上の中断ボタンを押してください。</font>
       <form action="#" id="agreementForm">
         <label class="checkbox-label" id="agreeLabel"><input type="checkbox" id="agreementCheck">同意する</label>
         <div id="agreementMessage"></div>
@@ -375,10 +376,9 @@
     <div id="menuArea" style="display: none;">
       <!--ハンバーガー選択画面-->
       <div id="MenuText">
-        <p>あなたは、</p>
         <p class="groName">グループA</p>
         <p>です。</p>
-        <p>左上のメニューバーから、あなたのグループを選択して、入力ページに進んでください。</p>
+        <p>左上のメニューバーから、上記と同じグループを選択して、入力ページに進んでください。</p>
       </div>
     </div>
 
@@ -411,16 +411,16 @@
         <div class="form-group" id="group-name">
           <p>お名前を入力してください。</p>
           <label for="lname">姓</label>
-          <input type="text" id="lname" placeholder="姓" data-label="姓" required>
+          <input type="text" id="lname" placeholder="姓" data-label="姓" enterkeyhint="next" required>
           <label for="fname">名</label>
-          <input type="text" id="fname" placeholder="名" data-label="名" required>
+          <input type="text" id="fname" placeholder="名" data-label="名" enterkeyhint="next" required>
         </div>
 
         <!--年齢-->
         <div class="form-group" id="group-year">
           <label for="year">現在の年齢を入力してください。</label>
           <div class="year-row">
-            <input type="text" id="year" placeholder="年齢" pattern="^[0-9\uff10-\uff19]+$" inputmode="numeric" data-label="年齢" required>
+            <input type="text" id="year" placeholder="年齢" pattern="^[0-9\uff10-\uff19]+$" inputmode="numeric" data-label="年齢" enterkeyhint="next" required>
             <span>歳</span>
           </div>
         </div>
@@ -458,6 +458,11 @@
         <img id="confirmPhoto" src="" alt="送信写真">
       </div>
 
+      <div id="conf-check">
+        <label><input type="checkbox" id="confCheck">確認しました</label>
+        <div id="confMessage"></div>
+      </div>
+
       <div class="btn2">
         <button id="backBtn" type="button">修正する</button>
         <button id="submitBtn" type="button">送信</button>
@@ -492,17 +497,17 @@
 
     // GitHub Pages で公開する時だけ使う：GASを「ウェブアプリ」としてデプロイしたURL
     // （GASのページとして開いている間は google.script.run が使われるので不要）
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbyW6dea7i-DMPe64BSgl94Vkf8wH880jb5nEbrotBSBo4CGhfHZ8VROZcgXFK9VNCox/exec';
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbyTd0DVNbXkAtmyNcJYVV20Gpa1f7Vw4-XTQm4y0daz66hbKPBpZP4gDAtmBH1LQx6S/exec';
 
     /* =========================================================
      * 音声案内の文章（原案はここを書き換えるだけで反映されます）
      * ========================================================= */
     const GUIDE = {
-      home:        'これから実験を始めます。了承いただける場合は、「同意する」の四角を押して、チェックを入れてください。',
-      agreed:      '同意にチェックが入りました。次に、下の青い「はじめる」ボタンを押してください。',
+      home:        'これから体験会を始めます。中断する場合は、右上の赤いボタンを押してください。体験会にご了承いただける場合は、「同意する」の四角を押して、チェックを入れてください。',
+      agreed:      '同意にチェックが入りました。下の「はじめる」ボタンを押してください。',
       needAgree:   '「同意する」にチェックが入っていません。「同意する」の四角を押してから、「はじめる」ボタンを押してください。',
       menu:        `あなたは、${GROUP_NAME}です。画面の左上にある、三本線のメニューボタンを押してください。`,
-      menuOpen:    `メニューが開きました。グループA、グループB、グループCの、3つが並んでいます。あなたのグループ、${GROUP_NAME}を押してください。`,
+      menuOpen:    `メニューが開きました。グループA、グループB、グループCの、3つが並んでいます。あなたのグループ、を押してください。元の画面には上のバツボタンで戻れます。`,
       dummy:       (name) => `ここは、${name}のページです。違うページが選ばれました。左上のメニューボタンを押して、${GROUP_NAME}を選び直してください。`,
       input:       '入力画面です。お名前、年齢、写真の、3つを入力します。まず、「姓」の欄を押して、名字を入力してください。',
       lname:       '「姓」の欄に、名字を入力してください。入力が終わったら、その下の「名」の欄を押してください。',
@@ -513,7 +518,8 @@
       photoSelected:'写真が選ばれました。画面の下にある、「確認画面へ進む」ボタンを押してください。',
       required:    (label) => `「${label}」が、まだ入力されていません。黄色く光っているところに入力してください。`,
       yearInvalid: '年齢は、数字だけで入力してください。例えば、70、のように入力します。',
-      confirm:     (l, f, y) => `入力内容の確認です。お名前は、${l} ${f}さん。年齢は、${y}歳です。写真も表示されています。よろしければ、右下の「送信」ボタンを押してください。直したいところがあれば、左下の「修正する」ボタンを押してください。`,
+      confirm:     (l, f, y) => `入力内容の確認です。お名前は、${l} ${f}さん。年齢は、${y}歳です。写真も表示されています。よろしければ、「確認しました」にチェックを入れて、右下の「送信」ボタンを押してください。直したいところがあれば、左下の「修正する」ボタンを押してください。`,
+      needConf:   '「確認しました」にチェックが入っていません。「確認しました」の四角を押してから、「送信」ボタンを押してください。',
       back:        '入力画面に戻りました。直したい欄を押して、修正してください。終わったら、「確認画面へ進む」ボタンを押してください。',
       sending:     '送信しています。画面を触らずに、そのままお待ちください。',
       complete:    '送信が完了しました。以上で実験は終了です。ご協力ありがとうございました。スタッフを呼んでください。',
@@ -563,6 +569,9 @@
     const confirmYear = document.getElementById('confirmYear');     //年齢　内容確認
     const confirmPhoto = document.getElementById('confirmPhoto');       //写真　内容確認
 
+    const confCheck = document.getElementById('confCheck');   //確認チェックボックス
+    const confMessage = document.getElementById('confMessage');   //確認注意メッセージ
+    const confForcus = document.getElementById('conf-check');
     const confBtn = document.getElementById('confBtn');     //確認遷移ボタン
     const backBtn = document.getElementById('backBtn');     //修正ボタン
     const submitBtn = document.getElementById('submitBtn');     //送信ボタン
@@ -911,6 +920,71 @@
       }
     });
 
+        // ===== 入力欄の自動フォーカス(姓→名→年齢→写真→確認ボタン) =====
+    const focusOrder = [lname, fname, year, uploadPhoto];
+    let lastCompositionEnd = 0;   //漢字変換を確定した時刻
+
+    document.addEventListener('pointerdown', (e) => {
+      lastTapTarget = e.target;
+    }, { capture: true, passive: true });
+
+    //今の入力欄をハイライト(写真は欄の枠ごと)
+    function highlightField(el) {
+      document.querySelectorAll('#inputArea .highlight-active')
+        .forEach(x => x.classList.remove('highlight-active'));
+      if (!el) return;
+      const target = (el === uploadPhoto) ? el.closest('.form-group') : el;
+      target.classList.add('highlight-active');
+    }
+    focusOrder.forEach(el => el.addEventListener('focus', () => highlightField(el)));
+    confBtn.addEventListener('focus', () => highlightField(null));
+
+    function moveFocus(next) {
+      autoFocused = next;
+      next.focus({ preventScroll: true });
+      next.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+
+    //入力済みで正しい値なら次の欄へ
+    function goNext(current) {
+      if (!current.value.trim()) return;
+      if (!current.checkValidity()) {   //年齢が数字でないときなど
+        current.reportValidity();
+        return;
+      }
+      const next = focusOrder[focusOrder.indexOf(current) + 1];
+      if (next) moveFocus(next);
+    }
+
+    [lname, fname, year].forEach(input => {
+      input.addEventListener('compositionend', () => { lastCompositionEnd = Date.now(); });
+
+      //キーボードの「次へ」(Enter)で次の欄へ
+      input.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        if (e.isComposing || e.keyCode === 229) return;   //漢字変換を確定するEnterは無視
+        e.preventDefault();   //Enterで確認画面へ進んでしまうのを防ぐ
+        if (Date.now() - lastCompositionEnd < 100) return;  //Safariで変換確定直後に来るEnter
+        goNext(input);
+      });
+
+      //iPhoneの数字キーボードの「完了」など、Enterなしで入力欄から抜けたとき
+      input.addEventListener('change', () => {
+        const tapped = lastTapTarget;
+        setTimeout(() => {
+          //他の欄や、AI・中止・確認ボタンを押した場合は、そちらを優先する
+          if (tapped && tapped.closest && tapped.closest('#aiArea, #retireArea, #confBtn')) return;
+          const active = document.activeElement;
+          if (!active || active === document.body) goNext(input);
+        }, 0);
+      });
+    });
+
+    //写真を選んだら「確認画面へ進む」ボタンへ
+    uploadPhoto.addEventListener('change', () => {
+      if (uploadPhoto.files[0]) moveFocus(confBtn);
+    });
+
     //写真　確認で表示
     confBtn.addEventListener('click', function() {
       const file = uploadPhoto.files[0];
@@ -962,17 +1036,25 @@
       confirmArea.style.display = 'none';
       inputArea.style.display = 'block';
       statusMessage.textContent = '';
+      submitBtn.disabled = true;  //連打防止
+      backBtn.disabled = true;
       changeStep('情報入力');
       guide(GUIDE.back, lname);
     });
 
     //送信
     submitBtn.addEventListener('click', function() {
-      statusMessage.textContent = '送信中...';
-      statusMessage.style.color = 'black';
-      submitBtn.disabled = true;  //連打防止
-      guide(GUIDE.sending, null, { repeat: false });
-      saveData('成功');
+      if(!confCheck.checked){
+        confMessage.textContent = '確認しましたにチェックを入れてください';
+        confCheck.scrollIntoView({block:"center"});
+        guide(GUIDE.needConf, confForcus);
+      }else {
+        statusMessage.textContent = '送信中...';
+        statusMessage.style.color = 'black';
+        submitBtn.disabled = true;  //連打防止
+        guide(GUIDE.sending, null, { repeat: false });
+        saveData('成功');
+      }
     });
 
     /* =========================================================
@@ -1090,6 +1172,7 @@
       statusMessage.textContent = '送信に失敗しました。　' + error;
       statusMessage.style.color = 'red';
       submitBtn.disabled = false; // 再送できるように戻す
+      backBtn.disabled = false;
 
       if (isRetired) {
         isRetired = false;
