@@ -376,6 +376,7 @@
     <div id="menuArea" style="display: none;">
       <!--ハンバーガー選択画面-->
       <div id="MenuText">
+        <p>あなたは、</p>
         <p class="groName">グループA</p>
         <p>です。</p>
         <p>左上のメニューバーから、上記と同じグループを選択して、入力ページに進んでください。</p>
@@ -497,13 +498,13 @@
 
     // GitHub Pages で公開する時だけ使う：GASを「ウェブアプリ」としてデプロイしたURL
     // （GASのページとして開いている間は google.script.run が使われるので不要）
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbwAyz6ba3iuHnaBF-9UjydoqLrV2khzgYZFlnUEgpJ6ULyMpGEWfBzdtSsyT62IW2fP/exec';
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbzYQsGjpDas2JZi-DTHmZYpBLsunqhQhPn8U0lcP8UTo7xUpw5rIGa99qMArDm539xL/exec';
 
     /* =========================================================
      * 音声案内の文章（原案はここを書き換えるだけで反映されます）
      * ========================================================= */
     const GUIDE = {
-      home:        'これから体験会を始めます。中断する場合は、右上の赤いボタンを押してください。体験会にご了承いただける場合は、「同意する」の四角を押して、チェックを入れてください。',
+      home:        'こんにちは。これから体験会を始めます。中断する場合は、右上の赤いボタンを押してください。体験会にご了承いただける場合は、「同意する」の四角を押して、チェックを入れてください。',
       agreed:      '同意にチェックが入りました。下の「はじめる」ボタンを押してください。',
       needAgree:   '「同意する」にチェックが入っていません。「同意する」の四角を押してから、「はじめる」ボタンを押してください。',
       menu:        `あなたは、${GROUP_NAME}です。画面の左上にある、三本線のメニューボタンを押してください。`,
@@ -984,7 +985,10 @@
 
     //写真を選んだら「確認画面へ進む」ボタンへ
     uploadPhoto.addEventListener('change', () => {
-      if (uploadPhoto.files[0]) moveFocus(confBtn);
+      if (uploadPhoto.files[0]) {
+        moveFocus(confBtn);
+        confCheck.scrollIntoView({block:"center"});
+      }
     });
 
     //写真　確認で表示
