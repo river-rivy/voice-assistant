@@ -497,7 +497,7 @@
 
     // GitHub Pages で公開する時だけ使う：GASを「ウェブアプリ」としてデプロイしたURL
     // （GASのページとして開いている間は google.script.run が使われるので不要）
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbyTd0DVNbXkAtmyNcJYVV20Gpa1f7Vw4-XTQm4y0daz66hbKPBpZP4gDAtmBH1LQx6S/exec';
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbwAyz6ba3iuHnaBF-9UjydoqLrV2khzgYZFlnUEgpJ6ULyMpGEWfBzdtSsyT62IW2fP/exec';
 
     /* =========================================================
      * 音声案内の文章（原案はここを書き換えるだけで反映されます）
@@ -923,6 +923,8 @@
         // ===== 入力欄の自動フォーカス(姓→名→年齢→写真→確認ボタン) =====
     const focusOrder = [lname, fname, year, uploadPhoto];
     let lastCompositionEnd = 0;   //漢字変換を確定した時刻
+    let lastTapTarget = null;     //最後にタップした要素
+    let autoFocused = null;       //自動で移動したフォーカス先
 
     document.addEventListener('pointerdown', (e) => {
       lastTapTarget = e.target;
@@ -1027,6 +1029,8 @@
 
       inputArea.style.display = 'none';
       confirmArea.style.display = 'block';
+      submitBtn.disabled = false;  //「修正する」から戻ってきた時も押せるようにする
+      backBtn.disabled = false;
       changeStep('入力確認');
       guide(GUIDE.confirm(lname.value, fname.value, year.value), submitBtn);
     });
