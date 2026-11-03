@@ -725,7 +725,7 @@
       element.classList.add('highlight-active');
       // 画面外にあれば見える位置までスクロール（固定表示の要素は除く）
       if (scroll && getComputedStyle(element).position !== 'fixed') {
-        element.scrollIntoView({ behavior: 'smooth', block: 'top' });
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
 
@@ -939,7 +939,7 @@
     function moveFocus(next) {
       autoFocused = next;
       next.focus({ preventScroll: true });
-      next.scrollIntoView({ block: 'top', behavior: 'smooth' });
+      next.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
 
     //入力済みで正しい値なら次の欄へ
@@ -981,7 +981,7 @@
     uploadPhoto.addEventListener('change', () => {
       if (uploadPhoto.files[0]) {
         moveFocus(confBtn);
-        confCheck.scrollIntoView({block:"top"});
+        confCheck.scrollIntoView({block:"center"});
       }
     });
 
@@ -1048,7 +1048,7 @@
     submitBtn.addEventListener('click', function() {
       if(!confCheck.checked){
         confMessage.textContent = '確認しましたにチェックを入れてください';
-        confCheck.scrollIntoView({block:"top"});
+        confCheck.scrollIntoView({block:"center"});
         guide(GUIDE.needConf, confForcus);
       }else {
         statusMessage.textContent = '送信中...';
